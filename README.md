@@ -8,9 +8,9 @@
 
 **Mõõdikud:**
 
-1. [Esimene KPI või mõõdik — näiteks: päevane müük poe kohta]
-2. [Teine KPI või mõõdik]
-3. [Kolmas KPI või mõõdik — vabatahtlik]
+1. [Eestis müüdavate toodete koguarv andmebaasis ja lisanduvate toodete arv päevas]
+2. [Toodete arv/osakaal tootekategooriate järgi]
+3. [Andmete terviklikkus: toodete arv/osakaal, millel on olemas 1) energia ja peamiste toitainete sisaldus, 2) koostisosade nimekiri, 3) pakendi materjal, 4) kogus (netomass/ruumala vmt)]
 
 ## Arhitektuur
 
@@ -30,17 +30,17 @@ Täpsem kirjeldus: [`docs/arhitektuur.md`](docs/arhitektuur.md)
 | Allikas | Tüüp | Ajas muutuv? | Roll |
 |---------|------|--------------|------|
 | [Andmeallika nimi] | [API / fail / andmebaas] | Jah, [iga päevas] | Põhiandmevoog |
-| [Teise allika nimi] | [seed / dim-tabel] | Ei, staatiline | Kõrvaltabel |
+| [Teise allika nimi] | [seed] | Ei, staatiline | Kõrvaltabel |
 
 ## Stack
 
 | Komponent | Tööriist |
 |-----------|---------|
-| Sissevõtt | [Python / Airflow / muu] |
-| Transformatsioon | [SQL / dbt / muu] |
-| Andmehoidla | PostgreSQL |
-| Näidikulaud | [Superset / Streamlit / muu] |
-| Orkestreerimine | [Airflow / cron / muu] |
+| Sissevõtt | [Python] |
+| Transformatsioon | [SQL / dbt? ] |
+| Andmehoidla | [DuckDB] |
+| Näidikulaud | [Superset] |
+| Orkestreerimine | [cron / Airflow?] |
 
 ## Käivitamine
 
