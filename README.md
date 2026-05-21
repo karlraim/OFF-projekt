@@ -123,6 +123,6 @@ Testide tulemused: [kuhu salvestatakse / kuidas vaadata]
 | Nimi | Roll |
 |------|------|
 | [Karl Räim] | [Andmete sissevõtt] |
-| [Maarja Kukk] | [Transformeerimine, kvaliteedikontroolid] |
+| [Maarja Kukk] | [Transformeerimine, kvaliteedikontrollid] |
 | [Marge Saamel] | [Dokumenteerimine, andmete visualiseerimine] |
-| [Anni Maire Maripuu] | [Andmete visualiseerimine] |
+| [Anni Maire Maripuu] | [Kviteedikontrollid, andmete visualiseerimine] |
