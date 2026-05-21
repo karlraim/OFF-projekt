@@ -30,7 +30,7 @@ Täpsem kirjeldus: [`docs/arhitektuur.md`](docs/arhitektuur.md)
 | Allikas | Tüüp | Ajas muutuv? | Roll |
 |---------|------|--------------|------|
 | [Andmeallika nimi] | [API / fail / andmebaas] | Jah, [iga päevas] | Põhiandmevoog |
-| [Teise allika nimi] | [seed] | Ei, staatiline | Kõrvaltabel |
+| [Eestis müüdavad tooted seisuga xx.05.2026] | [seed] | Ei, staatiline | Kõrvaltabel |
 
 ## Stack
 
