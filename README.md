@@ -48,7 +48,7 @@ Täielik OpenFoodFacts andmestik on kursuseprojekti jaoks ebaproportsionaalselt 
 |-----------|---------|
 | Sissevõtt | Python |
 | Transformatsioon | dbt |
-| Andmehoidla | DuckDB |
+| Andmehoidla | PostgreSQL / pg_duckdb |
 | Näidikulaud | Superset |
 | Orkestreerimine | Airflow |
 
@@ -109,39 +109,44 @@ Testide tulemused: [kuhu salvestatakse / kuidas vaadata]
 
 ```
 .
-├── airflow/                          # Airflow konfiguratsioon (orkestreerimine)
-│   └── dags/                         # DAG-id ehk automaatsed töövood
-│       └── .gitkeep
+├── airflow/
+│   ├── dags/
+│   ├── logs/
+│   └── plugins/
 │
-├── data/                             # Lokaalne ajutine andmehoidla pipeline jaoks
-│   ├── deltas/                       # Päevaste deltafailide (JSONL) hoidla
-│   │   └── .gitkeep
-│   ├── snapshots/                   # Täissnapshotid ja filtreeritud Parquet failid
-│   │   └── .gitkeep
-│   └── state/                        # Pipeline state/info (viimati töödeldud failid jne)
-│       └── .gitkeep
+├── data/
+│   ├── bootstrap/
+│   ├── snapshots/
+│   ├── deltas/
+│   └── state/
 │
-├── dbt_project/                      # dbt transformatsiooniprojekt
-│   ├── macros/                       # Korduvkasutatavad dbt SQL makrod
-│   │   └── .gitkeep
-│   ├── models/                       # dbt andmemudelid
-│   │   ├── intermediate/             # Äriloogika ja vahepealsed transformatsioonid
-│   │   ├── marts/                    # Dashboard-ready KPI ja agregatsioonitabelid
-│   │   └── staging/                  # Toorandmete puhastus ja normaliseerimine
-│   └── seeds/                        # Staatilised lookup/abifailid
-│       └── .gitkeep
+├── dbt_project/
+│   ├── models/
+│   │   ├── staging/
+│   │   ├── intermediate/
+│   │   └── marts/
+│   ├── macros/
+│   └── seeds/
 │
-├── docs/                             # Projekti dokumentatsioon
-│   ├── arhitektuur.md                # Projekti arhitektuur, riskid, andmevoog jne
-│   └── progress.md                   # Sprindi/projekti edenemise kokkuvõtted
+├── docs/
+│   ├── arhitektuur.md
+│   └── progress.md
 │
-├── ingestion/                        # Python scriptid andmete sissevõtuks
+├── ingestion/
+│   ├── bootstrap/
+│   ├── production/
+│   ├── deltas/
+│   └── common/
 │
-├── init/                             # PostgreSQL alglaadimise SQL scriptid
+├── init/
+│   ├── 01_create_schemas.sql
+│   └── 02_extensions.sql
 │
-├── .env.example                      # Näidiskonfiguratsioon keskkonnamuutujatele
-├── .gitignore                        # Gitist välistatud failid ja kaustad
-└── README.md                         # Projekti üldkirjeldus ja käivitusjuhend
+├── compose.yml
+├── requirements.txt
+├── README.md
+├── .env.example
+└── .gitignore
 ```
 
 ## Kokkuvõte, puudused ja võimalikud edasiarendused
