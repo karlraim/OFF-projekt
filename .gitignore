@@ -1,0 +1,40 @@
+# environments
+.env
+.venv/
+venv/
+
+# python
+__pycache__/
+*.pyc
+
+# dbt
+target/
+dbt_packages/
+logs/
+
+# airflow
+airflow/logs/
+
+# local databases
+*.csv.gz
+*.duckdb
+*.db
+*.parquet
+
+# data
+data/snapshots/*
+data/deltas/*
+data/state/*
+
+# keep placeholders
+!data/snapshots/.gitkeep
+!data/deltas/.gitkeep
+!data/state/.gitkeep
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

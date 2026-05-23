@@ -1,16 +1,18 @@
-# [GRUPI NIMI] — [Eesti andmete maht, terviklikkus ja uuenemine Open Food Facts andmebaasis]
-
-> **Juhend:** Asenda kõik nurksulgudes vormid oma sisuga enne esitamist. Kustuta see juhendrida.
+# [GRUPI NIMI] — Eesti andmete maht, terviklikkus ja uuenemine Open Food Facts andmebaasis
 
 ## Äriküsimus
 
-[Open Food Facts (https://world.openfoodfacts.org/) on avalik, vabatahtlike poolt täiendatav andmebaas, mis koondab rohkem kui nelja miljoni toidu pakendiandmeid 150 riigist. Projekti eesmärk on hinnata, kuivõrd esinduslik on Open Food Facts andmebaas Eesti puhul ning kas see oleks kasutatav rakenduste loomiseks ja teadustöö sisendina.]
+Open Food Facts (https://world.openfoodfacts.org/) on avalik, vabatahtlike poolt täiendatav andmebaas, mis koondab rohkem kui nelja miljoni toidu pakendiandmeid 150 riigist. Projekti eesmärk on hinnata, kuivõrd esinduslik on Open Food Facts andmebaas Eesti puhul ning kas see oleks kasutatav rakenduste loomiseks ja teadustöö sisendina.
 
 **Mõõdikud:**
-
-1. [Eestis müüdavate toodete koguarv andmebaasis ja lisanduvate toodete arv päevas]
-2. [Toodete arv/osakaal tootekategooriate järgi]
-3. [Andmete terviklikkus: toodete arv/osakaal, millel on olemas 1) energia ja peamiste toitainete sisaldus, 2) koostisosade nimekiri, 3) pakendi materjal, 4) kogus (netomass/ruumala vmt)]
+1. Eestis müüdavate toodete koguarv andmebaasis
+2. Lisanduvate toodete arv päevas
+3. Andmete terviklikkus: toodete arv/osakaal, millel on olemas
+	1) energia ja peamiste toitainete sisaldus,
+	2) koostisosade nimekiri,
+	3) pakendi materjal,
+	4) kogus (netomass/ruumala vmt)
+* Võimalusel arvutame mõõdikud ka tootekategooriate lõikes.
 
 ## Arhitektuur
 
@@ -29,18 +31,26 @@ Täpsem kirjeldus: [`docs/arhitektuur.md`](docs/arhitektuur.md)
 
 | Allikas | Tüüp | Ajas muutuv? | Roll |
 |---------|------|--------------|------|
-| [Andmeallika nimi] | [API / fail / andmebaas] | Jah, [iga päevas] | Põhiandmevoog |
-| [Eestis müüdavad tooted seisuga xx.05.2026] | [seed] | Ei, staatiline | Kõrvaltabel |
+| OpenFoodFacts andmebaas | CSV| Jah, iga päev | Algne andmestiku laadimine |
+| OpenFoodFacts delta loend | TXT | Jah, iga päev | Andmestiku uuendamine |
+| OpenFoodFacts päeva delta | JSONL | Jah/Ei (iga deltafail eraldi on staatiline, aga iga päev lisandub uus fail) | Andmestiku uuendamine |
+
+https://world.openfoodfacts.org/data
+https://static.openfoodfacts.org/data/en.openfoodfacts.org.products.csv.gz (u 1GB, kogu andmebaas, pakitud CSV)
+https://static.openfoodfacts.org/data/delta/index.txt (delta failide (JSONL) loend, viimased 14 päeva)
+https://static.openfoodfacts.org/data/delta/{filename} (u 20MB, ühe päeva muudatused)
+
+Täielik OpenFoodFacts andmestik on kursuseprojekti jaoks ebaproportsionaalselt suur (u 4.5M kirjet). Seetõttu filtreeritakse sissevõtu-etapis ainult Eesti toodetega seotud kirjed (u 4.5K), mis vähendab oluliselt lokaalset mälu- ja arvutusvajadust.
 
 ## Stack
 
 | Komponent | Tööriist |
 |-----------|---------|
-| Sissevõtt | [Python] |
-| Transformatsioon | [SQL / dbt? ] |
-| Andmehoidla | [DuckDB] |
-| Näidikulaud | [Superset] |
-| Orkestreerimine | [cron / Airflow?] |
+| Sissevõtt | Python |
+| Transformatsioon | dbt |
+| Andmehoidla | DuckDB |
+| Näidikulaud | Superset |
+| Orkestreerimine | Airflow |
 
 ## Käivitamine
 
@@ -56,11 +66,13 @@ cp .env.example .env
 # 3. Käivita teenused
 docker compose up -d --build
 
-# 4. [Vabatahtlik: käivita sissevõtt käsitsi esimesel korral]
-# docker compose exec pipeline python scripts/run_pipeline.py run-all
-```
+# Test-režiim
+python ingest.py --mode test
 
-Airflow (kui kasutatakse): http://localhost:8080 (kasutaja: airflow / parool: airflow)
+# Produktsiooni režiim
+python ingest.py --mode prod
+```
+Airflow: http://localhost:8080 (kasutaja: airflow / parool: airflow)
 Näidikulaud: http://localhost:[PORT]
 
 ## Saladused ja konfiguratsioon
@@ -97,14 +109,39 @@ Testide tulemused: [kuhu salvestatakse / kuidas vaadata]
 
 ```
 .
-├── README.md
-├── compose.yml
-├── .env.example
-├── .gitignore
-├── docs/
-│   ├── arhitektuur.md      ← nädal 1 väljund
-│   └── progress.md         ← nädal 2 väljund
-└── ...                     ← ülejäänud projektifailid
+├── airflow/                          # Airflow konfiguratsioon (orkestreerimine)
+│   └── dags/                         # DAG-id ehk automaatsed töövood
+│       └── .gitkeep
+│
+├── data/                             # Lokaalne ajutine andmehoidla pipeline jaoks
+│   ├── deltas/                       # Päevaste deltafailide (JSONL) hoidla
+│   │   └── .gitkeep
+│   ├── snapshots/                   # Täissnapshotid ja filtreeritud Parquet failid
+│   │   └── .gitkeep
+│   └── state/                        # Pipeline state/info (viimati töödeldud failid jne)
+│       └── .gitkeep
+│
+├── dbt_project/                      # dbt transformatsiooniprojekt
+│   ├── macros/                       # Korduvkasutatavad dbt SQL makrod
+│   │   └── .gitkeep
+│   ├── models/                       # dbt andmemudelid
+│   │   ├── intermediate/             # Äriloogika ja vahepealsed transformatsioonid
+│   │   ├── marts/                    # Dashboard-ready KPI ja agregatsioonitabelid
+│   │   └── staging/                  # Toorandmete puhastus ja normaliseerimine
+│   └── seeds/                        # Staatilised lookup/abifailid
+│       └── .gitkeep
+│
+├── docs/                             # Projekti dokumentatsioon
+│   ├── arhitektuur.md                # Projekti arhitektuur, riskid, andmevoog jne
+│   └── progress.md                   # Sprindi/projekti edenemise kokkuvõtted
+│
+├── ingestion/                        # Python scriptid andmete sissevõtuks
+│
+├── init/                             # PostgreSQL alglaadimise SQL scriptid
+│
+├── .env.example                      # Näidiskonfiguratsioon keskkonnamuutujatele
+├── .gitignore                        # Gitist välistatud failid ja kaustad
+└── README.md                         # Projekti üldkirjeldus ja käivitusjuhend
 ```
 
 ## Kokkuvõte, puudused ja võimalikud edasiarendused
