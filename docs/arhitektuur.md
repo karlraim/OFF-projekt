@@ -71,4 +71,4 @@ mart2 --> dashboard
 | Ajaressurss | Vajalikud tegevused pole projekti vahe- ja/või lõpptähtaegadeks valminud | Jagame konkreetsed tööülesanded vastavalt meeskonnaliikmete oskustele ja võimalustele ning suhtleme jooksvalt |
 
 ## Privaatsus ja turve
-Projektis ei kasutata isikuandmeid. Andmebaasi paroolid tulevad `.env` failist.
+Projektis ei kasutata isikuandmeid. Andmebaasi jt teenuste kasutajatunnused ja paroolid tulevad `.env` failist.
