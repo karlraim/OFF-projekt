@@ -1,0 +1,24 @@
+services:
+  # --- Peamine analüütika andmebaas ---
+  analytics-db:
+    image: pgduckdb/pgduckdb:18-v1.1.1
+    container_name: off-analytics-db
+    env_file:
+      - .env
+    ports:
+      - "${DB_PORT_HOST}:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - ./init:/docker-entrypoint-initdb.d # Mount the init directory for initialization scripts
+      - analytics_db_vol:/var/lib/postgresql # Use a named volume for persistent data storage
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-praktikum}"]
+      interval: 10s
+      retries: 5
+      start_period: 5s
+
+volumes:
+  analytics_db_vol:
