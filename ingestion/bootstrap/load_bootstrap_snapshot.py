@@ -25,24 +25,21 @@ def get_postgres_connection():
     )
 
 
-def recreate_raw_table(cursor):
+def recreate_raw_table(cursor, columns):
     """
     Drop + recreate strategy.
 
     MVP/full refresh lähenemine.
     """
 
-    cursor.execute("""
-        DROP TABLE IF EXISTS raw.raw_products;
-    """)
+    create_columns_sql = ", ".join([f'"{column}" TEXT' for column in columns])
 
-    cursor.execute("""
-        CREATE TABLE raw.raw_products AS
-        SELECT *
-        FROM (
-            SELECT 1 AS placeholder
-        ) t
-        WHERE FALSE;
+    cursor.execute(f"""
+        DROP TABLE IF EXISTS raw.raw_products CASCADE;
+
+        CREATE TABLE raw.raw_products (
+            {create_columns_sql}
+        );
     """)
 
 
@@ -60,6 +57,7 @@ def load_bootstrap_snapshot():
     print(f"Laen bootstrap datasetti: " f"{BOOTSTRAP_DATASET_PATH}")
 
     # DuckDB kasutatakse parquet lugemiseks
+
     con = duckdb.connect()
 
     postgres_conn = get_postgres_connection()
@@ -68,9 +66,7 @@ def load_bootstrap_snapshot():
 
     cursor = postgres_conn.cursor()
 
-    recreate_raw_table(cursor)
-
-    print("Loon temporary dataframe view...")
+    print("Loen parquet faili DuckDB kaudu...")
 
     duckdb_relation = con.execute(f"""
         SELECT *
@@ -79,23 +75,19 @@ def load_bootstrap_snapshot():
         )
     """)
 
-    df = duckdb_relation.fetch_df()
+    # Veerunimed DuckDB metadata põhjal
 
-    print(f"Laetud read parquet failist: " f"{len(df):,}")
+    columns = [description[0] for description in duckdb_relation.description]
+
+    rows = duckdb_relation.fetchall()
+
+    print(f"Laetud read parquet failist: {len(rows):,}")
+
+    print("Loon raw.raw_products tabeli...")
+
+    recreate_raw_table(cursor, columns)
 
     print("Kirjutan PostgreSQL raw layerisse...")
-
-    columns = list(df.columns)
-
-    create_columns_sql = ", ".join([f'"{column}" TEXT' for column in columns])
-
-    cursor.execute(f"""
-        DROP TABLE IF EXISTS raw.raw_products;
-
-        CREATE TABLE raw.raw_products (
-            {create_columns_sql}
-        );
-    """)
 
     insert_query = sql.SQL("""
         INSERT INTO raw.raw_products ({fields})
@@ -105,14 +97,12 @@ def load_bootstrap_snapshot():
         values=sql.SQL(", ").join(sql.Placeholder() * len(columns)),
     )
 
-    rows = df.where(df.notnull(), None).values.tolist()
-
     cursor.executemany(
         insert_query,
         rows,
     )
 
-    print(f"PostgreSQL kirjutatud read: " f"{len(rows):,}")
+    print(f"PostgreSQL kirjutatud read: {len(rows):,}")
 
     cursor.close()
     postgres_conn.close()
