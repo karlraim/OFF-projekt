@@ -74,5 +74,56 @@ services:
 
     restart: unless-stopped
 
+  # --- Superset ühekordne initsialiseerimine (migratsioonid + admin kasutaja) ---
+  superset-init:
+    build:
+      context: .
+      dockerfile: Dockerfile.superset
+
+    container_name: off-superset-init
+
+    env_file:
+      - .env
+
+    environment:
+      SUPERSET_CONFIG_PATH: /app/pythonpath/superset_config.py
+
+    volumes:
+      - superset_home:/app/superset_home
+      - ./superset:/app/pythonpath
+
+    command: /bin/bash /app/pythonpath/init_superset.sh
+
+  # --- Apache Superset näidikulaud ---
+  superset:
+    build:
+      context: .
+      dockerfile: Dockerfile.superset
+
+    container_name: off-superset
+
+    depends_on:
+      superset-init:
+        condition: service_completed_successfully
+
+    env_file:
+      - .env
+
+    ports:
+      - "8088:8088"
+
+    environment:
+      SUPERSET_CONFIG_PATH: /app/pythonpath/superset_config.py
+
+    volumes:
+      - superset_home:/app/superset_home
+      - ./superset:/app/pythonpath
+
+    restart: unless-stopped
+
+    command: >
+      /bin/sh -c " superset run -h 0.0.0.0 -p 8088 "
+
 volumes:
   analytics_db_vol:
+  superset_home:
