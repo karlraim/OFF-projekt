@@ -75,14 +75,14 @@ select
     image_nutrition_url,
 
     -- CORE NUTRITION
-    "energy-kcal_100g" as energy_kcal_100g,
-    fat_100g,
-    "saturated-fat_100g" as saturated_fat_100g,
-    carbohydrates_100g,
-    sugars_100g,
-    fiber_100g,
-    proteins_100g,
-    salt_100g,
-    sodium_100g
+    cast(nullif("energy-kcal_100g", '') as numeric) as energy_kcal_100g,
+    cast(nullif(fat_100g, '') as numeric) as fat_100g,
+    cast(nullif("saturated-fat_100g", '') as numeric) as saturated_fat_100g,
+    cast(nullif(carbohydrates_100g, '') as numeric) as carbohydrates_100g,
+    cast(nullif(sugars_100g, '') as numeric) as sugars_100g,
+    cast(nullif(fiber_100g, '') as numeric) as fiber_100g,
+    cast(nullif(proteins_100g, '') as numeric) as proteins_100g,
+    cast(nullif(salt_100g, '') as numeric) as salt_100g,
+    cast(nullif(sodium_100g, '') as numeric) as sodium_100g
 
 from {{ source('raw', 'raw_products') }}
